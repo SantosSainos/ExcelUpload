@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
@@ -42,17 +44,15 @@ public class AdminController {
 		System.out.println("request param: " + ruta);
 
 		// Comparación si es archivo válido o no.
-		if (ruta.contains(".xlsx") || ruta.contains(".xls")) {
+		if (ruta.contains(".xlsx")) {
 			// Se carga el archivo.
 			FileInputStream archivo = new FileInputStream(new File(ruta));
 			// Se declara el libro sobre el cual se trabajará.
 			XSSFWorkbook wb = new XSSFWorkbook(archivo);
 			// Se declara la hoja del libro a utilizar.
 			XSSFSheet hoja = wb.getSheetAt(0);
-
 			FormulaEvaluator formEvaluator = wb.getCreationHelper()
 					.createFormulaEvaluator();
-
 			for (Row fila : hoja) {
 				for (Cell celda : fila) {
 					switch (formEvaluator.evaluateInCell(celda).getCellType()) {
@@ -66,7 +66,32 @@ public class AdminController {
 				}
 				System.out.println();
 			}
-			//Se cierra el libro de trabajo.
+			// Se cierra el libro de trabajo.
+			wb.close();
+			ra.addFlashAttribute("resultado", "Formato válido");
+		} else if (ruta.contains(".xls")) {
+			// Se carga el archivo.
+			FileInputStream archivo = new FileInputStream(new File(ruta));
+			// Se declara el libro sobre el cual se trabajará.
+			HSSFWorkbook wb = new HSSFWorkbook(archivo);
+			// Se declara la hoja del libro a utilizar.
+			HSSFSheet hoja = wb.getSheetAt(0);
+			FormulaEvaluator formEvaluator = wb.getCreationHelper()
+					.createFormulaEvaluator();
+			for (Row fila : hoja) {
+				for (Cell celda : fila) {
+					switch (formEvaluator.evaluateInCell(celda).getCellType()) {
+					case Cell.CELL_TYPE_NUMERIC:
+						System.out.print(celda.getNumericCellValue() + "\t\t");
+						break;
+					case Cell.CELL_TYPE_STRING:
+						System.out.print(celda.getStringCellValue() + "\t\t");
+						break;
+					}
+				}
+				System.out.println();
+			}
+			// Se cierra el libro de trabajo.
 			wb.close();
 			ra.addFlashAttribute("resultado", "Formato válido");
 		} else {
